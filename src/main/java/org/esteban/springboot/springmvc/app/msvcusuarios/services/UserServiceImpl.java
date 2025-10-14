@@ -59,6 +59,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Iterable<UsuarioDTO> findByIds(Iterable<Long> ids) {
+        return StreamSupport.stream(repository.findAllById(ids).spliterator(), false)
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     @Transactional
     public boolean delete(Long id) {
         if (repository.existsById(id)) {
