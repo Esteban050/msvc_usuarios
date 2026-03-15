@@ -16,16 +16,21 @@ RUN mvn clean package -DskipTests -B
 FROM amazoncorretto:17-alpine
 WORKDIR /app
 
-# Copiar JAR desde build stage
-COPY --from=build /app/target/msvc-usuarios-0.0.1-SNAPSHOT.jar app.jar
+# Argumentos de construcción
+ARG MSVC_NAME=msvc-usuarios
+ARG PORT=8001
 
-# Variables de entorno para optimización JVM
+# Variables de entorno
+ENV SERVER_PORT=${PORT}
 ENV JAVA_OPTS="-XX:+UseContainerSupport \
     -XX:MaxRAMPercentage=75.0 \
     -XX:+UseG1GC \
     -XX:+UseStringDeduplication \
     -Djava.security.egd=file:/dev/./urandom"
 
-EXPOSE 8001
+# Copiar JAR dinámicamente usando el argumento
+COPY --from=build /app/target/${MSVC_NAME}-0.0.1-SNAPSHOT.jar app.jar
+
+EXPOSE ${SERVER_PORT}
 
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
